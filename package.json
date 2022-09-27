@@ -19,6 +19,8 @@
   },
   "homepage": "https://github.com/quynhlien2002/Challenge-12#readme",
   "dependencies": {
-    "express": "^4.18.1"
+    "dotenv": "^16.0.2",
+    "express": "^4.18.1",
+    "mysql2": "^2.3.3"
   }
 }

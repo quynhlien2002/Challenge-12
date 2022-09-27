@@ -1,6 +1,7 @@
 const express = require ('express');
 // Import and require mysql2
 const mysql = require ('mysql2');
+const { inherits } = require('util');
 
 const PORT = process.env.PORT || 3000;
 const app = express();
@@ -9,27 +10,26 @@ const app = express();
 app.use(express.urlencoded({ extended: false})); 
 app.use(express.json());
 
-const db = mysql.createConnection (
-    {
-        host: 'localhost',
-        user: 'root',
-        password: 'QuynhTan02_14',
-        database: 'employment_db'
-    },
-    console.log(`Connected to the employment_db database.`)
-);
+// const db = mysql.createConnection (
+//     {
+//         host: 'localhost',
+//         user: DB_USER,
+//         password: DB_PASSWORD,
+//         database: DB_NAME
+//     },
+//     console.log(`Connected to the employment_db database.`)
+// );
 
-const questions = () => {
-    return inquirer.prompt ([
+const questions = async () => {
+ let ask = await inquirer.prompt ([
     {
         type: 'list', 
         name: 'choice',
         message: 'What Would You Like To Do?',
         choices: ['View Employees', 'Add Employee', 'Update Employee Role', 'View All Roles', 'Add Role', 'View Department', 'Add Department'],
-    }])
-}
+    }]);
 
-switch (questions) {
+switch (ask) {
     case 'View Employees':
         viewEmployee()
         break 
@@ -52,6 +52,9 @@ switch (questions) {
         addDepartment()
         break
 } 
+}
+
+questions();
 
 viewEmployee = () => {
     db.query('SELECT employee.first_name, employee.last_name, employee.id, d_role.title AS name,  FROM employee JOIN employee ON d_role.employee = employee.view',  (err, results) => {
