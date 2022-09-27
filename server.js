@@ -3,6 +3,7 @@ const express = require ('express');
 const mysql = require ('mysql2');
 const { inherits } = require('util');
 const inquirer = require('inquirer');
+const { table } = require('console');
 
 const PORT = process.env.PORT || 3000;
 const app = express();
@@ -30,27 +31,27 @@ const questions = async () => {
         choices: ['View Employees', 'Add Employee', 'Update Employee Role', 'View All Roles', 'Add Role', 'View Department', 'Add Department'],
     }]);
 
-switch (ask) {
+switch (ask.choice) {
     case 'View Employees':
-        viewEmployee()
+        viewEmployee();
         break 
     case 'Add Employee':
-        addEmployee()
+        addEmployee();
         break 
     case 'Update Employee Role':
-        updateEmployee()
+        updateEmployee();
         break 
     case 'View All Roles':
-        viewRole()
+        viewRole();
         break
     case 'Add Role': 
-        addRole()
+        addRole();
         break
     case 'View Department': 
-        viewDepartment()
+        viewDepartment();
         break
     case 'Add Department': 
-        addDepartment()
+        addDepartment();
         break
 } 
 };
@@ -60,14 +61,15 @@ questions();
 viewEmployee = () => {
     db.query('SELECT * FROM employee;',  (err, results) => {
         console.log(results);
-        questions();
+        console.table(results);
     } )
 };
 
 addEmployee = async () => {
-    let roles = await db.query('SELECT * FROM d_role;');
-    let managers = await db.query('SELECT * FROM employee');
-    let answer = inquire.prompt ([
+    let roles = await db.promise().query('SELECT DISTINCT title, id FROM d_role;');
+    let managers = await db.promise().query('SELECT * FROM employee;');
+    
+    let answer = await inquirer.prompt([
             {
                 type: 'input', 
                 name: 'firstName', 
@@ -86,7 +88,7 @@ addEmployee = async () => {
                     return {
                         name: role.title,
                         value: role.id
-                    }
+                    };
                 })
             },
             {
@@ -103,19 +105,20 @@ addEmployee = async () => {
 
         ])
 
-        let result = await db.query('INSERT INTO employee SET ?', {
+        let result = await db.promise().query('INSERT INTO employee SET ?', {
             first_name: answer.firstName,
             last_name: answer.lastName,
             role_id: answer.roleId,
             manager_id: answer.employeeManager
         });
 
-        console.log(`${answer.firstName} ${answer.lastName} is added to the list`)
+        console.log(`${answer.firstName} ${answer.lastName} is added to the list`);
+        console.table(result);
     };
 
 updateEmployee = async () => {
-    let employee = await db.query('SELECT * FROM employee;');
-    let pickEmployee = inquire.prompt([
+    let employee = await db.promise().query('SELECT * FROM employee;');
+    let pickEmployee = inquirer.prompt([
         {
             type: 'list',
             name: 'name', 
@@ -128,9 +131,9 @@ updateEmployee = async () => {
             })
         }
     ]);
-    let roles = await db.query('SELECT * FROM role;');
+    let roles = await db.promise().query('SELECT * FROM role;');
 
-    let update = inquire.prompt([
+    let update = inquirer.prompt([
         {
             type: 'list', 
             name: 'role', 
@@ -144,19 +147,20 @@ updateEmployee = async () => {
         }
     ]);
 
-    let result = await db.query('UPDATE employee SET ? WHERE ?', [{role_id: update.role}, {id: pickEmployee.name}]);
+    let result = await db.promise().query('UPDATE employee SET ? WHERE ?', [{role_id: update.role}, {id: pickEmployee.name}]);
 
     console.log(`${answer.name} is updated to the list`);
+    console.table(result);
 }
 
-viewRole = async () => {
+viewRole = () => {
     db.query('SELECT tile, salary, department_id FROM d_role;',  (err, results) => {
-        console.log(results);
+        console.table(results);
     })
 };
 
 addRole = async () => {
-    let department = await db.query('SELECT * FROM department;');
+    let department = await db.promise().query('SELECT * FROM department;');
     let answer = await inquire.prompt([
         {
             type: 'input',
@@ -181,18 +185,19 @@ addRole = async () => {
         }
     ]);
 
-    let result = await db.query('INSERT INTO role SET?', {
+    let result = await db.promise().query('INSERT INTO role SET?', {
         title: answer.newRole, 
         salary: answer.salary,
         d_id: answer.id
     })
 
     console.log(`${answer.newRole} added to the list`);
+    console.table(result);
 };
 
-viewDepartment = async () => {
+viewDepartment = () => {
     db.query('SELECT * FROM department', (err, result) => {
-        console.log(result);
+        console.table(result);
     });
 };
 
@@ -209,6 +214,7 @@ addDepartment = async () => {
     });
 
     console.log(`${answer.departmentName} added to the list`);
+    console.table(result);
 }
 
 app.use((req, res) => {
