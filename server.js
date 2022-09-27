@@ -11,15 +11,15 @@ const app = express();
 app.use(express.urlencoded({ extended: false})); 
 app.use(express.json());
 
-// const db = mysql.createConnection (
-//     {
-//         host: 'localhost',
-//         user: DB_USER,
-//         password: DB_PASSWORD,
-//         database: DB_NAME
-//     },
-//     console.log(`Connected to the employment_db database.`)
-// );
+const db = mysql.createConnection (
+    {
+        host: 'localhost',
+        user: 'root',
+        password: 'QuynhTan02_14',
+        database: 'employment_db'
+    },
+    console.log(`Connected to the employment_db database.`)
+);
 
 const questions = async () => {
  let ask = await inquirer.prompt ([
@@ -58,10 +58,11 @@ switch (ask) {
 questions();
 
 viewEmployee = () => {
-    db.query('SELECT employee.first_name, employee.last_name, employee.id, d_role.title AS name,  FROM employee JOIN employee ON d_role.employee = employee.view',  (err, results) => {
+    db.query('SELECT * FROM employee;',  (err, results) => {
         console.log(results);
+        questions();
     } )
-}
+};
 
 addEmployee = async () => {
     let roles = await db.query('SELECT * FROM d_role;');
