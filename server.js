@@ -65,11 +65,15 @@ viewEmployee = () => {
     } )
 };
 
-addEmployee = async () => {
-    let roles = await db.promise().query('SELECT DISTINCT title, id FROM d_role;');
-    let managers = await db.promise().query('SELECT * FROM employee;');
+addEmployee =  () => {
+    let roles =  db.query('SELECT DISTINCT title, id FROM d_role;', (err,result) => {
+        console.log(result);
+    });
+    let managers =  db.query('SELECT * FROM employee;', (err,result) => {
+        console.log(result);
+    });
     
-    let answer = await inquirer.prompt([
+    let answer =  inquirer.prompt([
             {
                 type: 'input', 
                 name: 'firstName', 
@@ -105,7 +109,7 @@ addEmployee = async () => {
 
         ])
 
-        let result = await db.promise().query('INSERT INTO employee SET ?', {
+        let result =  db.query('INSERT INTO employee SET ?', {
             first_name: answer.firstName,
             last_name: answer.lastName,
             role_id: answer.roleId,
